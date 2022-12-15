@@ -22,27 +22,64 @@ async def on_ready():
     print("Ready!")
 
 
-# Simple package call + return
-@tree.command(name="roll", description="Roll dice as defined by CritDice syntax (See /syntax)", guild=discord.Object(
+@tree.command(name="help", description="How to use UnownRoller", guild=discord.Object(
     id=GUILD_TEST))
-async def _roll(interaction, diceroll: str, hidden: bool = False):
-    result, explanation = rolldice.roll_dice(diceroll)
+async def _help(interaction, command: str = None):
+    msg = "I don't know that command!"
+    title = f"/help {command}?"
+    url = None
+
+    match command:
+        case None:
+            msg = "A dice-rolling tool that **lilyOS** (Leah#0004) made to ease playing Pokérole, a fan-made Pokémon " \
+                  "TTRPG.\n\n" \
+                  "Despite that, the command /roll can still be used to normally roll dice, independently of the " \
+                  "Pokérole functionality.\n\n" \
+                  "To get more information on Pokérole there is `/unown pokerole`.\n" \
+                  "For help on rolling dice, try `/unown syntax`! "
+            title = "This is UnownRoller!"
+        case "roll":
+            msg = "`dice` - Roll dice according to CritDice syntax\n" \
+                  "`hidden` - Determines if only you or everyone can see the result"
+            title = "/roll [dice] (hidden)"
+        case "pokeroll":
+            msg = "`dice` - Roll dice according to CritDice syntax\n" \
+                  "`chancedice` - For move effects, chance dice are used. These only count successes when a 6 is rolled.\n" \
+                  "`hidden` - Determines if only you or everyone can see the result"
+            title = "/roll [dice] (hidden)"
+        case "syntax":
+            # TODO Syntax
+            msg = "`xDy` where x is an amount and y is the amount of sides the dice has.\n\n" \
+                  "Check the linked page for detailed syntax. This command will update later."
+            title = "CritDice syntax"
+            url = "https://www.critdice.com/roll-advanced-dice"
+
+    await interaction.response.send_message(
+        embed=formatting.embeds.botmsg(title, msg, url),
+        ephemeral=True)
+
+
+# Simple package call + return
+@tree.command(name="roll", description="Roll dice with CritDice syntax", guild=discord.Object(
+    id=GUILD_TEST))
+async def _roll(interaction, dice: str, hidden: bool = False):
+    result, explanation = rolldice.roll_dice(dice)
     explanation = explanation.replace(",", ", ")
 
     await interaction.response.send_message(
-        embed=formatting.embeds.rolls(diceroll, result, explanation, interaction.user),
+        embed=formatting.embeds.rolls(dice, result, explanation, interaction.user),
         ephemeral=hidden)
 
 
-@tree.command(name="pokeroll", description="Roll d6 as defined by CritDice syntax and count successes (See /syntax)",
+@tree.command(name="pokeroll", description="Roll d6 with CritDice syntax, counting successes according to the Pokérole system",
               guild=discord.Object(
                   id=GUILD_TEST))
-async def _pokeroll(interaction, diceroll: str, chancedice: bool = False, hidden: bool = False):
-    result, explanation = rolldice.roll_dice(diceroll)
+async def _pokeroll(interaction, dice: str, chancedice: bool = False, hidden: bool = False):
+    result, explanation = rolldice.roll_dice(dice)
     explanation = explanation.replace(",", ", ")
 
     # I could technically allow non-D6 rolls here, but this is for Pokérole, which only uses d6.
-    if "d6" not in diceroll.replace(" ", "").lower():
+    if "d6" not in dice.replace(" ", "").lower():
         await interaction.response.send_message(
             embed=formatting.embeds.error("Not valid d6 rolls! (try `/syntax`)", interaction.user),
             ephemeral=True
@@ -65,7 +102,7 @@ async def _pokeroll(interaction, diceroll: str, chancedice: bool = False, hidden
             result = f"{str(totalSuccesses)} successes!"
 
         await interaction.response.send_message(
-            embed=formatting.embeds.rolls(diceroll.lower() + (" chance dice" if chancedice else ""), result,
+            embed=formatting.embeds.rolls(dice.lower() + (" chance dice" if chancedice else ""), result,
                                           explanation, interaction.user),
             ephemeral=hidden
         )

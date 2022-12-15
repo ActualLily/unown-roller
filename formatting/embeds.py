@@ -1,12 +1,21 @@
 import discord
 
 
+def botmsg(title: str, text: str, url: str):
+    embed = discord.Embed(title=title,
+                          description=text,
+                          color=0x636363,
+                          url=url)
+    return embed
+
+
 def rolls(roll: str, result: str, explanation: str, author: discord.User):
     embed = discord.Embed(description=f"` {result} ` ⟵  {explanation}", color=author.color)
     embed.set_author(name=f"{author} rolls {roll}!",
                      icon_url=author.avatar.url)
 
     return embed
+
 
 def error(message: str, author: discord.User):
     embed = discord.Embed(description=f"{message}", color=0xff0000)
