@@ -1,9 +1,8 @@
 import os
-import dice
+import rolldice
 
 import discord
-from discord.ext import commands
-from discord.ext.commands import bot
+from discord import app_commands
 from dotenv import load_dotenv
 from numpy.core.defchararray import strip
 
@@ -12,39 +11,26 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_TEST = os.getenv("GUILD_TEST")
 
 intents = discord.Intents.default()
-intents.message_content = True
-
-client = commands.Bot(command_prefix="!", intents=intents)
+client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
 
 
 @client.event
 async def on_ready():
-    await client.wait_until_ready()
+    await tree.sync(guild=discord.Object(id=GUILD_TEST))
     print("Ready!")
 
 
-@bot.command(name="roll")
-async def self(message, arg):
-    result = dice.roll(arg)
+@tree.command(name="roll", description="Roll dice as defined by CritDice syntax (See /syntax)", guild=discord.Object(
+    id=GUILD_TEST))
+async def rollcmd(interaction, diceroll: str):
+    result, explanation = rolldice.roll_dice(diceroll)
 
-    resultString = ""
-    successes = 0
+    embed = discord.Embed(description=f"` {result} ` ⟵  {strip(explanation)}", color=interaction.user.color)
+    embed.set_author(name=f"{interaction.user} rolls {diceroll}!",
+                     icon_url=interaction.user.avatar.url)
 
-    for roll in result:
-        resultString += ("[**" + str(roll) + "**] ")
-        if roll > 3:
-            successes += 1
-
-    if successes != 1:
-        successes = str(successes) + " successes!"
-    else:
-        successes = str(successes) + " success!"
-
-    embed = discord.Embed(description=f"` {successes} ` ⟵  {strip(resultString)}", color=message.author.color)
-    embed.set_author(name=f"{message.author} rolls {arg}!",
-                     icon_url=message.author.avatar.url)
-
-    await message.channel.send(embed=embed)
+    await interaction.response.send_message(embed=embed)
 
 
 client.run(TOKEN)
