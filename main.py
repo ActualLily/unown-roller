@@ -4,7 +4,8 @@ import rolldice
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
-from numpy.core.defchararray import strip
+
+import formatting.embeds
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -23,14 +24,29 @@ async def on_ready():
 
 @tree.command(name="roll", description="Roll dice as defined by CritDice syntax (See /syntax)", guild=discord.Object(
     id=GUILD_TEST))
-async def rollcmd(interaction, diceroll: str):
+async def _roll(interaction, diceroll: str):
     result, explanation = rolldice.roll_dice(diceroll)
 
-    embed = discord.Embed(description=f"` {result} ` ⟵  {strip(explanation)}", color=interaction.user.color)
-    embed.set_author(name=f"{interaction.user} rolls {diceroll}!",
-                     icon_url=interaction.user.avatar.url)
+    await interaction.response.send_message(
+        embed=formatting.embeds.rolls(diceroll, result, explanation, interaction.user))
 
-    await interaction.response.send_message(embed=embed)
+
+@tree.command(name="pokeroll", description="Roll d6 as defined by CritDice syntax and count successes (See /syntax)",
+              guild=discord.Object(
+                  id=GUILD_TEST))
+async def _pokeroll(interaction, diceroll: str):
+    result, explanation = rolldice.roll_dice(diceroll)
+
+    if "d6" not in diceroll.replace(" ", ""):
+        await interaction.response.send_message(
+            embed=formatting.embeds.error("Not valid d6 rolls!", author=interaction.user)
+        )
+
+    else :
+        await interaction.response.send_message(
+            embed=formatting.embeds.rolls(diceroll, result, explanation, interaction.user)
+        )
+
 
 
 client.run(TOKEN)
