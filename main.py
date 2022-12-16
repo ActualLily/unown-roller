@@ -3,46 +3,51 @@ from typing import Literal
 
 import discord
 import rolldice
-from discord import app_commands, ButtonStyle
-from discord.ui import button, View, Button
+from discord import app_commands
 from dotenv import load_dotenv
-from numpy.core.defchararray import isnumeric
 
 import formatting.embeds
 
-load_dotenv()
+load_dotenv("private.env")
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_TEST = os.getenv("GUILD_TEST")
+
+load_dotenv("release.env")
+STAGE = os.getenv("STAGE")
+VERSION = os.getenv("VERSION")
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
+print(f"Launching UnownRoller {STAGE} {VERSION}...")
+
 
 @client.event
 async def on_ready():
-    await tree.sync(guild=discord.Object(id=GUILD_TEST))
-    print("Ready!")
+
+    await tree.sync()
+
+    print(f"UnownRoller {STAGE} {VERSION} synced and running!")
 
 
-availableCommands = Literal["help", "roll", "pokeroll", "core", "pokerole", "syntax"]
+availableCommands = Literal["help", "roll", "pokeroll", "core", "pokerole", "syntax", "beans"]
 
 
-@tree.command(name="help", description="How to use UnownRoller", guild=discord.Object(
-    id=GUILD_TEST))
-async def _help(interaction, command: availableCommands = None):
+@tree.command(name="help", description="How to use UnownRoller")
+async def _help(interaction, entry: availableCommands = None, public: bool = False):
     msg = "I don't know that command!"
-    title = f"/help {command}?"
+    title = f"/help {entry}?"
     url = None
 
-    match command:
+    match entry:
         case None:
             msg = "A dice-rolling tool that **lilyOS** (Leah#0004) made to ease playing Pokérole, a fan-made Pokémon " \
                   "TTRPG.\n\n" \
                   "Despite that, the command /roll can still be used to normally roll dice, independently of the " \
                   "Pokérole functionality.\n\n" \
-                  "To get more information on Pokérole there is `/unown pokerole`.\n" \
-                  "For help on rolling dice, try `/unown syntax`! "
+                  "To get more information on Pokérole there is `/help entry pokerole`.\n" \
+                  "For help on rolling dice, try `/help entry syntax`! "
             title = "This is UnownRoller!"
         case "roll":
             msg = "`dice` - Roll dice according to CritDice syntax\n" \
@@ -62,18 +67,20 @@ async def _help(interaction, command: availableCommands = None):
         case "syntax":
             msg = "`xDy` where x is an amount and y is the amount of sides the dice has.\n\n" \
                   "`3d6K2` with a `K` keeps the highest 2 rolls.\n" \
-                  "`3d6k2` with a `k` keeps the lowest 2 rolls."
-            title = "CritDice syntax"
-            url = "https://pypi.org/project/py-rolldice/#description"
+                  "`3d6k2` with a `k` keeps the lowest 2 rolls.\n\n" \
+                  "All basic mathematical operations are also supported.\n" \
+                  "`**` is exponential, `//` is floor division.\n\n" \
+                  "For details, visit the linked page."
+            title = "UnownRoller uses the CritDice syntax"
+            url = "https://www.critdice.com/roll-advanced-dice/"
 
     await interaction.response.send_message(
         embed=formatting.embeds.botmsg(title, msg, url),
-        ephemeral=True)
+        ephemeral=not public)
 
 
 # Simple package call + return
-@tree.command(name="roll", description="Roll dice with CritDice syntax", guild=discord.Object(
-    id=GUILD_TEST))
+@tree.command(name="roll", description="Roll dice with CritDice syntax")
 async def _roll(interaction, dice: str, hidden: bool = False):
     result, explanation = rolldice.roll_dice(dice)
     explanation = explanation.replace(",", ", ")
@@ -83,11 +90,9 @@ async def _roll(interaction, dice: str, hidden: bool = False):
         ephemeral=hidden)
 
 
-@tree.command(name="core", description="Grab information from the Pokérole book",
-              guild=discord.Object(
-                  id=GUILD_TEST))
+@tree.command(name="core", description="Grab information from the Pokérole book")
 async def _core(interaction, page: str, public: bool = False):
-    if page.isnumeric():
+    if page.isnumeric() and 0 < int(page) < 489:
         embed, file = formatting.embeds.imgmsg(f"Pokérole Core p{page}", f"res/corebook/{page}.jpeg")
 
         await interaction.response.send_message(
@@ -96,14 +101,13 @@ async def _core(interaction, page: str, public: bool = False):
             ephemeral=public)
     else:
         await interaction.response.send_message(
-            embed=formatting.embeds.error(f"`{page}` is not a valid page number!", interaction.user)
+            embed=formatting.embeds.error(f"`{page}` is not a valid page number!", interaction.user),
+            ephemeral=True
         )
 
 
 @tree.command(name="pokeroll",
-              description="Roll d6 with CritDice syntax, counting successes according to the Pokérole system",
-              guild=discord.Object(
-                  id=GUILD_TEST))
+              description="Roll d6 with CritDice syntax, counting successes according to the Pokérole system")
 async def _pokeroll(interaction, dice: str, chancedice: bool = False, hidden: bool = False):
     result, explanation = rolldice.roll_dice(dice)
     explanation = explanation.replace(",", ", ")
