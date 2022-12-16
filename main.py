@@ -6,13 +6,13 @@ import rolldice
 from discord import app_commands
 from dotenv import load_dotenv
 
-import formatting.embeds
+import formatting.embeds as msgs
 
 load_dotenv("private.env")
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_TEST = os.getenv("GUILD_TEST")
 
-load_dotenv("release.env")
+load_dotenv("data.env")
 STAGE = os.getenv("STAGE")
 VERSION = os.getenv("VERSION")
 
@@ -75,7 +75,7 @@ async def _help(interaction, entry: availableCommands = None, public: bool = Fal
             url = "https://www.critdice.com/roll-advanced-dice/"
 
     await interaction.response.send_message(
-        embed=formatting.embeds.botmsg(title, msg, url),
+        embed=msgs.botmsg(title, msg, url),
         ephemeral=not public)
 
 
@@ -86,14 +86,14 @@ async def _roll(interaction, dice: str, hidden: bool = False):
     explanation = explanation.replace(",", ", ")
 
     await interaction.response.send_message(
-        embed=formatting.embeds.rolls(dice, result, explanation, interaction.user),
+        embed=msgs.rolls(dice, result, explanation, interaction.user),
         ephemeral=hidden)
 
 
 @tree.command(name="core", description="Grab information from the Pokérole book")
 async def _core(interaction, page: str, public: bool = False):
     if page.isnumeric() and 0 < int(page) < 489:
-        embed, file = formatting.embeds.imgmsg(f"Pokérole Core p{page}", f"res/corebook/{page}.jpeg")
+        embed, file = msgs.imgmsg(f"Pokérole Core p{page}", f"res/corebook/{page}.jpeg")
 
         await interaction.response.send_message(
             embed=embed,
@@ -101,7 +101,7 @@ async def _core(interaction, page: str, public: bool = False):
             ephemeral=public)
     else:
         await interaction.response.send_message(
-            embed=formatting.embeds.error(f"`{page}` is not a valid page number!", interaction.user),
+            embed=msgs.error(f"`{page}` is not a valid page number!", interaction.user),
             ephemeral=True
         )
 
@@ -115,7 +115,7 @@ async def _pokeroll(interaction, dice: str, chancedice: bool = False, hidden: bo
     # I could technically allow non-D6 rolls here, but this is for Pokérole, which only uses d6.
     if "d6" not in dice.replace(" ", "").lower():
         await interaction.response.send_message(
-            embed=formatting.embeds.error("Not valid d6 rolls! (try `/syntax`)", interaction.user),
+            embed=msgs.error("Not valid d6 rolls! (try `/syntax`)", interaction.user),
             ephemeral=True
         )
 
@@ -136,7 +136,7 @@ async def _pokeroll(interaction, dice: str, chancedice: bool = False, hidden: bo
             result = f"{str(totalSuccesses)} successes!"
 
         await interaction.response.send_message(
-            embed=formatting.embeds.rolls(dice.replace("D", "d") + (" chance dice" if chancedice else ""), result,
+            embed=msgs.rolls(dice.replace("D", "d") + (" chance dice" if chancedice else ""), result,
                                           explanation, interaction.user),
             ephemeral=hidden
         )
