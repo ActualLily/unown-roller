@@ -125,8 +125,8 @@ async def _core(interaction, page: str, public: bool = False):
               guild=discord.Object(id=GUILD_TEST))
 async def _pokemon(interaction, idorname: str, public: bool = False):
     await interaction.response.send_message(
-        embed=msgs.pkmndata(1),
-        ephemeral=True
+        embed=msgs.pkmndata(idorname),
+        ephemeral=public
     )
 
 @tree.command(name="pokeroll",

@@ -1,9 +1,7 @@
-import os
 from typing import Union
 
 import discord
 import database.connectionhandler as db
-import database.apicalls as api
 
 from formatting import emoji as em
 
@@ -76,12 +74,14 @@ def pkmndata(pokemon: Union[int, str]):
                           f"**Abilities**\n" +
                           f"{data['ability1']}" + f"\n{data['ability2'] if data['ability2'] is not None else ''}",
                     inline=True)
+
     embed.add_field(name="Data",
                     value=f"**Weight:** {data['weight']}\n" +
                           f"**Height:** {data['height']}\n\n" +
                           f"**Stage:** {data['evostage']}\n" +
                           f"**Evolution:** {data['evospeed']}\n",
                     inline=True)
+
     embed.add_field(name="Moves", value=f"{em.rankemoji(1)}this\n{em.rankemoji(2)}one\n{em.rankemoji(3)}is\n{em.rankemoji(4)}gonna\n{em.rankemoji(5)}be\n{em.rankemoji(6)}really\n{em.rankemoji(7)}tough\n", inline=True)
     embed.add_field(name="Moves", value=f"{em.rankemoji(1)}just\n{em.rankemoji(2)}make\n{em.rankemoji(3)}some\n{em.rankemoji(4)}kind\n{em.rankemoji(5)}of\n{em.rankemoji(6)}serializable\n{em.rankemoji(7)}json?\n", inline=True)
     embed.add_field(name="Moves", value=f"{em.rankemoji(1)}for\n{em.rankemoji(2)}now\n{em.rankemoji(3)}this\n{em.rankemoji(4)}is\n{em.rankemoji(5)}just\n{em.rankemoji(6)}test\n{em.rankemoji(7)}data\n", inline=True)
