@@ -14,3 +14,14 @@ def getpokemon(pokemon: str):
         logging.warning(f"{pokemon} not found!")
 
     return pokemondata
+
+def getspecies(pokemon: str):
+    pokemondata = ""
+
+    try:
+        request = requests.get(f"https://pokeapi.co/api/v2/pokemon-species/{pokemon}")
+        pokemondata = json.loads(request.text, object_hook=lambda d: SimpleNamespace(**d))
+    except:
+        logging.warning(f"{pokemon} not found!")
+
+    return pokemondata

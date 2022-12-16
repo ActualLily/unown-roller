@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Literal
 
@@ -5,6 +6,7 @@ import discord
 import rolldice
 from discord import app_commands
 from dotenv import load_dotenv
+import database.connectionhandler as db
 
 import formatting.embeds as msgs
 
@@ -25,8 +27,7 @@ print(f"Launching UnownRoller {STAGE} {VERSION}...")
 
 @client.event
 async def on_ready():
-
-    await tree.sync()
+    await tree.sync(guild=discord.Object(id=GUILD_TEST))
 
     print(f"UnownRoller {STAGE} {VERSION} synced and running!")
 
@@ -34,7 +35,7 @@ async def on_ready():
 availableCommands = Literal["help", "roll", "pokeroll", "core", "pokerole", "syntax", "beans"]
 
 
-@tree.command(name="help", description="How to use UnownRoller")
+@tree.command(name="help", description="How to use UnownRoller", guild=discord.Object(id=GUILD_TEST))
 async def _help(interaction, entry: availableCommands = None, public: bool = False):
     msg = "I don't know that command!"
     title = f"/help {entry}?"
@@ -79,8 +80,22 @@ async def _help(interaction, entry: availableCommands = None, public: bool = Fal
         ephemeral=not public)
 
 
+@tree.command(name="datamod-pokemon", description="Modify and add data to list of Pokémon",
+              guild=discord.Object(id=GUILD_TEST))
+async def _datamod_pokemon(interaction, pokedex: int, page: int, rank: int, hp: str, dex: str, vit: str, spe: str,
+                           ins: str, evolutionstage: int, evolutionspeed: int, form: str = ""):
+    if db.hasperms(interaction.user.id) is True:
+        db.adjustpokemon(pokedex, page, rank, hp, dex, vit, spe, ins, evolutionstage, evolutionspeed, form)
+        pass
+    else:
+        logging.warning(f"{interaction.user} tried to modify pokemon data!")
+        await interaction.response.send_message(
+            embed=msgs.error("You do not have permission to change the database.", interaction.user),
+            ephemeral=True)
+
+
 # Simple package call + return
-@tree.command(name="roll", description="Roll dice with CritDice syntax")
+@tree.command(name="roll", description="Roll dice with CritDice syntax", guild=discord.Object(id=GUILD_TEST))
 async def _roll(interaction, dice: str, hidden: bool = False):
     result, explanation = rolldice.roll_dice(dice)
     explanation = explanation.replace(",", ", ")
@@ -90,7 +105,7 @@ async def _roll(interaction, dice: str, hidden: bool = False):
         ephemeral=hidden)
 
 
-@tree.command(name="core", description="Grab information from the Pokérole book")
+@tree.command(name="core", description="Grab information from the Pokérole book", guild=discord.Object(id=GUILD_TEST))
 async def _core(interaction, page: str, public: bool = False):
     if page.isnumeric() and 0 < int(page) < 489:
         embed, file = msgs.imgmsg(f"Pokérole Core p{page}", f"res/corebook/{page}.jpeg")
@@ -106,8 +121,17 @@ async def _core(interaction, page: str, public: bool = False):
         )
 
 
+@tree.command(name="pokemon", description="Grab information from the Pokérole book",
+              guild=discord.Object(id=GUILD_TEST))
+async def _pokemon(interaction, idorname: str, public: bool = False):
+    await interaction.response.send_message(
+        embed=msgs.pkmndata(1),
+        ephemeral=True
+    )
+
 @tree.command(name="pokeroll",
-              description="Roll d6 with CritDice syntax, counting successes according to the Pokérole system")
+              description="Roll d6 with CritDice syntax, counting successes according to the Pokérole system",
+              guild=discord.Object(id=GUILD_TEST))
 async def _pokeroll(interaction, dice: str, chancedice: bool = False, hidden: bool = False):
     result, explanation = rolldice.roll_dice(dice)
     explanation = explanation.replace(",", ", ")
@@ -137,7 +161,7 @@ async def _pokeroll(interaction, dice: str, chancedice: bool = False, hidden: bo
 
         await interaction.response.send_message(
             embed=msgs.rolls(dice.replace("D", "d") + (" chance dice" if chancedice else ""), result,
-                                          explanation, interaction.user),
+                             explanation, interaction.user),
             ephemeral=hidden
         )
 
