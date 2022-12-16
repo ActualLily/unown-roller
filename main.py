@@ -1,8 +1,10 @@
 import os
+from typing import Literal
 
 import discord
 import rolldice
-from discord import app_commands
+from discord import app_commands, ButtonStyle
+from discord.ui import button, View, Button
 from dotenv import load_dotenv
 
 import formatting.embeds
@@ -22,9 +24,12 @@ async def on_ready():
     print("Ready!")
 
 
+availableCommands = Literal["help", "roll", "pokeroll", "core", "pokerole", "syntax"]
+
+
 @tree.command(name="help", description="How to use UnownRoller", guild=discord.Object(
     id=GUILD_TEST))
-async def _help(interaction, command: str = None):
+async def _help(interaction, command: availableCommands = None):
     msg = "I don't know that command!"
     title = f"/help {command}?"
     url = None
@@ -47,12 +52,18 @@ async def _help(interaction, command: str = None):
                   "`chancedice` - For move effects, chance dice are used. These only count successes when a 6 is rolled.\n" \
                   "`hidden` - Determines if only you or everyone can see the result"
             title = "/roll [dice] (hidden)"
+        case "pokerole":
+            msg = "It works exclusively off 6-sided dice (d6), counting successes if you roll above a 3 or in some cases only on 6.\n\n" \
+                  "For basic rules regarding Pokérole, please consult the \"Resources\" section in the linked page.\n" \
+                  "If you are getting started, I recommend p"
+            title = "Pokérole is a fan-made TTRPG system in the Pokémon setting"
+            url = "https://www.pokeroleproject.com/"
         case "syntax":
-            # TODO Syntax
             msg = "`xDy` where x is an amount and y is the amount of sides the dice has.\n\n" \
-                  "Check the linked page for detailed syntax. This command will update later."
+                  "`3d6K2` with a `K` keeps the highest 2 rolls.\n" \
+                  "`3d6k2` with a `k` keeps the lowest 2 rolls."
             title = "CritDice syntax"
-            url = "https://www.critdice.com/roll-advanced-dice"
+            url = "https://pypi.org/project/py-rolldice/#description"
 
     await interaction.response.send_message(
         embed=formatting.embeds.botmsg(title, msg, url),
@@ -71,7 +82,20 @@ async def _roll(interaction, dice: str, hidden: bool = False):
         ephemeral=hidden)
 
 
-@tree.command(name="pokeroll", description="Roll d6 with CritDice syntax, counting successes according to the Pokérole system",
+@tree.command(name="core", description="Grab information from the Pokérole book",
+              guild=discord.Object(
+                  id=GUILD_TEST))
+async def _core(interaction, parameter: int, public: bool = False):
+    embed, file = formatting.embeds.imgmsg(f"Pokérole Core p{parameter}", f"res/corebook/{parameter}.jpeg")
+
+    await interaction.response.send_message(
+        embed=embed,
+        file=file,
+        ephemeral=public)
+
+
+@tree.command(name="pokeroll",
+              description="Roll d6 with CritDice syntax, counting successes according to the Pokérole system",
               guild=discord.Object(
                   id=GUILD_TEST))
 async def _pokeroll(interaction, dice: str, chancedice: bool = False, hidden: bool = False):
@@ -102,7 +126,7 @@ async def _pokeroll(interaction, dice: str, chancedice: bool = False, hidden: bo
             result = f"{str(totalSuccesses)} successes!"
 
         await interaction.response.send_message(
-            embed=formatting.embeds.rolls(dice.lower() + (" chance dice" if chancedice else ""), result,
+            embed=formatting.embeds.rolls(dice.replace("D", "d") + (" chance dice" if chancedice else ""), result,
                                           explanation, interaction.user),
             ephemeral=hidden
         )

@@ -1,6 +1,12 @@
 import discord
 
 
+def imgmsg(title: str, image: str):
+    embed = discord.Embed(title=title)
+    file = discord.File(image, filename="image.png")
+    embed.set_image(url="attachment://image.png")
+    return embed, file
+
 def botmsg(title: str, text: str, url: str):
     embed = discord.Embed(title=title,
                           description=text,
