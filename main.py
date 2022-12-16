@@ -6,6 +6,7 @@ import rolldice
 from discord import app_commands, ButtonStyle
 from discord.ui import button, View, Button
 from dotenv import load_dotenv
+from numpy.core.defchararray import isnumeric
 
 import formatting.embeds
 
@@ -85,13 +86,18 @@ async def _roll(interaction, dice: str, hidden: bool = False):
 @tree.command(name="core", description="Grab information from the Pokérole book",
               guild=discord.Object(
                   id=GUILD_TEST))
-async def _core(interaction, parameter: int, public: bool = False):
-    embed, file = formatting.embeds.imgmsg(f"Pokérole Core p{parameter}", f"res/corebook/{parameter}.jpeg")
+async def _core(interaction, page: str, public: bool = False):
+    if page.isnumeric():
+        embed, file = formatting.embeds.imgmsg(f"Pokérole Core p{page}", f"res/corebook/{page}.jpeg")
 
-    await interaction.response.send_message(
-        embed=embed,
-        file=file,
-        ephemeral=public)
+        await interaction.response.send_message(
+            embed=embed,
+            file=file,
+            ephemeral=public)
+    else:
+        await interaction.response.send_message(
+            embed=formatting.embeds.error(f"`{page}` is not a valid page number!", interaction.user)
+        )
 
 
 @tree.command(name="pokeroll",
