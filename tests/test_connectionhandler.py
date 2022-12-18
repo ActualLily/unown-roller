@@ -4,6 +4,11 @@ import database.connectionhandler
 
 
 class Test(TestCase):
+
+    def test_fetchhorizontal_blank(self):
+        data = database.connectionhandler.fetchhorizontal("pokemon", filter="name = 'pikablu'")
+        self.assertIsNone(data)#
+
     def test_fetchhorizontal_group(self):
         data = database.connectionhandler.fetchhorizontal("pokemon", filter="name = 'bulbasaur'")
         expected = {'pokedex': 1, 'name': 'bulbasaur', 'form': '', 'page': '90', 'rank': 1, 'type1': 'grass', 'type2': 'poison',
@@ -18,6 +23,10 @@ class Test(TestCase):
         expected = {'pokedex': 1, 'name': 'bulbasaur'}
 
         self.assertEqual(data, expected)
+
+    def test_fetchvertical_blank(self):
+        data = database.connectionhandler.fetchvertical("types", filter="type = 'void'")
+        self.assertIsNone(data)
 
     def test_fetchvertical(self):
         data = database.connectionhandler.fetchvertical("types", "type")
