@@ -13,7 +13,7 @@ from formatting import emoji as em
 UNOWN_COLOR = 0x636363
 
 
-def edit_distance(string1, string2):
+def edit_distance(string1: str, string2: str):
     if len(string1) > len(string2):
         difference = len(string1) - len(string2)
         string1[:difference]
@@ -74,9 +74,21 @@ def abilitydata(ability: str):
 
         correction = db.fetchvertical("abilities", "name")
 
+        for name in correction:
+            if edit_distance(name, ability.lower()) < 1:
+                return error(
+                    f"{ability} was not found. Did you mean `{name}`?",
+                    f"{ability.title()}")
+
+        for name in correction:
+            if edit_distance(name, ability.lower()) < 2:
+                return error(
+                    f"{ability} was not found. Did you mean `{name}`?",
+                    f"{ability.title()}")
+
         if not isnumeric(ability[0]):
             # 434 - 471 pages are abilities. Divide the alphabet over it equally to suggest a page
-            alphabetposition = string.ascii_lowercase.index(ability[0]) + 1
+            alphabetposition = string.ascii_lowercase.index(ability[0].lower()) + 1
             possiblepage = math.floor(433 + (37 / 26) * alphabetposition)
             return error(
                 f"{ability} was not found in the database.\nBased on alphabetic order, try `/core {possiblepage}`!",
@@ -148,5 +160,5 @@ def pkmndata(pokemon: Union[int, str]):
     return embed
 
 
-abilitydata("overgrowth")
+abilitydata("overgrown")
 print()
