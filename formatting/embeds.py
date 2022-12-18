@@ -1,11 +1,38 @@
+import math
+import string
 from typing import Union
 
 import discord
+from numpy.core.defchararray import isnumeric
+
 import database.connectionhandler as db
+import database.apicalls as api
 
 from formatting import emoji as em
 
 UNOWN_COLOR = 0x636363
+
+
+def edit_distance(string1, string2):
+    """Ref: https://bit.ly/2Pf4a6Z"""
+
+    if len(string1) > len(string2):
+        difference = len(string1) - len(string2)
+        string1[:difference]
+
+    elif len(string2) > len(string1):
+        difference = len(string2) - len(string1)
+        string2[:difference]
+
+    else:
+        difference = 0
+
+    for i in range(len(string1)):
+        if string1[i] != string2[i]:
+            difference += 1
+
+    return difference
+
 
 def imgmsg(title: str, image: str):
     embed = discord.Embed(title=title,
@@ -30,7 +57,7 @@ def rolls(roll: str, result: str, explanation: str, author: discord.User):
     return embed
 
 
-def error(message: str, author: discord.User):
+def error(message: str, author: str):
     embed = discord.Embed(description=f"{message}",
                           color=0xff0000)
     embed.set_author(name=f"{author} caused an error!")
@@ -42,19 +69,39 @@ def getbubbles (min: int, max: int):
     return f"[ {'●' * min}{'◌' * (max - min)}{' ' * (12 - min - (max - min))} ]"
 
 
+def abilitydata(ability: str):
+    data = db.fetchhorizontal("abilities", filter=f"name = '{ability.lower()}'")
+
+    if data is None:
+
+        correction = db.fetchvertical("abilities", "name")
+
+
+        if not isnumeric(ability[0]):
+            # 434 - 471 pages are abilities. Divide the alphabet over it equally to suggest a page
+            alphabetposition = string.ascii_lowercase.index(ability[0]) + 1
+            possiblepage = math.floor(433 + (37 / 26) * alphabetposition)
+            return error(f"{ability} was not found in the database.\nBased on alphabetic order, try `/core {possiblepage}`!", f"{ability.title()} not found!")
+        else:
+            return error(f"{ability} was not found in the database.\nDid you type it correctly?", f"{ability.title()} not found!")
+
+    embed = discord.Embed(description=data["description"])
+    embed.set_author(name=ability.title())
+    embed.set_footer(text=data["effect"])
+
+    return embed
+
+
 def pkmndata(pokemon: Union[int, str]):
-
-    filter = ""
-
     if isinstance(pokemon, str):
         filter = f"{'pokedex' if pokemon.isnumeric() else 'name'} = {int(pokemon) if pokemon.isnumeric() else pokemon}"
     else:
         filter = f"pokedex = {pokemon}"
 
-    data = db.fetchunit("pokemon", filter=filter)
+    data = db.fetchhorizontal("pokemon", filter=filter)
 
     embed = discord.Embed(color=UNOWN_COLOR)
-    embed.set_author(name=f"{data['pokedex']} - {data['name'].title()}, the {data['descriptor']}")
+    embed.set_author(name=f"#{(3 - len(str(data['pokedex']))) * '0'}{data['pokedex']} - {data['name'].title()}, the {data['descriptor']}")
     embed.set_thumbnail(url=f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/{data['pokedex']}.png")
 
     embed.add_field(name="Stats",
@@ -85,7 +132,12 @@ def pkmndata(pokemon: Union[int, str]):
     embed.add_field(name="Moves", value=f"{em.rankemoji(1)}this\n{em.rankemoji(2)}one\n{em.rankemoji(3)}is\n{em.rankemoji(4)}gonna\n{em.rankemoji(5)}be\n{em.rankemoji(6)}really\n{em.rankemoji(7)}tough\n", inline=True)
     embed.add_field(name="Moves", value=f"{em.rankemoji(1)}just\n{em.rankemoji(2)}make\n{em.rankemoji(3)}some\n{em.rankemoji(4)}kind\n{em.rankemoji(5)}of\n{em.rankemoji(6)}serializable\n{em.rankemoji(7)}json?\n", inline=True)
     embed.add_field(name="Moves", value=f"{em.rankemoji(1)}for\n{em.rankemoji(2)}now\n{em.rankemoji(3)}this\n{em.rankemoji(4)}is\n{em.rankemoji(5)}just\n{em.rankemoji(6)}test\n{em.rankemoji(7)}data\n", inline=True)
+
     embed.set_footer(
-        text="According to all known laws of aviation, there is no way a bee should be able to fly. It's wings are too small to get its fat little body off the ground. The bee, of course, flies anyway, because bees don't care what humans think is impossible.")
+        text=api.getrandomdex(pokemon)
+    )
 
     return embed
+
+abilitydata("overgrowth")
+print()
