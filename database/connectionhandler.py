@@ -15,7 +15,7 @@ def connect() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
     return conn, cur
 
 
-def fetchunit(table: str, column: str = "*", filter: str = None):
+def fetchhorizontal(table: str, column: str = "*", filter: str = None):
     conn, cur = connect()
     if "*" not in column and "," not in column:
         # Return direct values instead of Tuples if twodimensional
@@ -28,36 +28,36 @@ def fetchunit(table: str, column: str = "*", filter: str = None):
         statement += f" WHERE {filter}"
     response = cur.execute(statement).fetchone()
 
-    responsearray = dict(zip([seq[0] for seq in cur.description], response))
+    if response is not None:
+        response = dict(zip([seq[0] for seq in cur.description], response))
 
     conn.close()
 
-    return responsearray
+    return response
 
 
-def fetchdata(table: str, column: str = "*", filter: str = None):
+def fetchvertical(table: str, column: str = "*", filter: str = None):
     conn, cur = connect()
-    if "*" not in column and "," not in column:
-        # Return direct values instead of Tuples if twodimensional
-        conn.row_factory = lambda cursor, row: row[0]
+
+    conn.row_factory = lambda cursor, row: row
 
     statement = f"SELECT {column} FROM {table}"
     if filter is not None:
         statement += f" WHERE {filter}"
     response = cur.execute(statement).fetchall()
 
-    responsearray = dict(zip([seq[0] for seq in cur.description], [seq[0] for seq in response]))
+    responselist = []
+
+    for data in response:
+        responselist.append(data[0])
 
     conn.close()
 
-    return responsearray
+    return responselist
 
 
 def hasperms(id: int):
-    if id in fetchdata("authorizedusers").values():
-        return True
-    else:
-        return False
+    return id in fetchvertical("authorizedusers")
 
 
 def adjustpokemon(pokedex, page, rank, hp, dex, vit, spe, ins, evolutionstage, evolutionspeed, form):
