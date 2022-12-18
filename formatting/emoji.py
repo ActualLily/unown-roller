@@ -1,5 +1,4 @@
 def rankemoji(rank: int):
-
     EMOJIS = {
         1: "<:starter:1053401721851887646> ",
         2: "<:beginner:1053401770094772274> ",

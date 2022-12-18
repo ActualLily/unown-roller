@@ -1,4 +1,3 @@
-import json
 import os
 import sqlite3
 from typing import Tuple
@@ -72,8 +71,7 @@ def adjustpokemon(pokedex, page, rank, hp, dex, vit, spe, ins, evolutionstage, e
     return None
 
 
-def convertTuple(tup):
-    # initialize an empty string
+def converttuple(tup):
     string = ''
     for item in tup:
         string = f"{string} {str(item)}"
