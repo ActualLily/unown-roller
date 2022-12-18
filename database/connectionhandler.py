@@ -50,6 +50,9 @@ def fetchvertical(table: str, column: str = "*", filter: str = None):
     for data in response:
         responselist.append(data[0])
 
+    if len(responselist) == 0:
+        return None
+
     conn.close()
 
     return responselist
