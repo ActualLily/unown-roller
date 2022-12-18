@@ -133,7 +133,7 @@ def pkmndata(pokemon: Union[int, str]):
                     value=f"**Type**\n" +
                           f"{data['type1'].title()}" + f"\n{data['type2'].title() if data['type2'] is not None else ''}\n\n" +
                           f"**Abilities**\n" +
-                          f"{data['ability1']}" + f"\n{data['ability2'] if data['ability2'] is not None else ''}",
+                          f"{data['ability1'].title()}" + f"\n{data['ability2'].title() if data['ability2'] is not None else ''}",
                     inline=True)
 
     embed.add_field(name="Data",
@@ -158,7 +158,3 @@ def pkmndata(pokemon: Union[int, str]):
     )
 
     return embed
-
-
-abilitydata("overgrown")
-print()
