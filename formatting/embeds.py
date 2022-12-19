@@ -144,13 +144,13 @@ def pkmndata(pokemon: Union[int, str]):
                     inline=True)
 
     embed.add_field(name="Moves",
-                    value=f"{em.rankemoji(1)}this\n{em.rankemoji(2)}one\n{em.rankemoji(3)}is\n{em.rankemoji(4)}gonna\n{em.rankemoji(5)}be\n{em.rankemoji(6)}really\n{em.rankemoji(7)}tough\n",
+                    value=f"{em.rank(1)}this\n{em.rank(2)}one\n{em.rank(3)}is\n{em.rank(4)}gonna\n{em.rank(5)}be\n{em.rank(6)}really\n{em.rank(7)}tough\n",
                     inline=True)
     embed.add_field(name="Moves",
-                    value=f"{em.rankemoji(1)}just\n{em.rankemoji(2)}make\n{em.rankemoji(3)}some\n{em.rankemoji(4)}kind\n{em.rankemoji(5)}of\n{em.rankemoji(6)}serializable\n{em.rankemoji(7)}json?\n",
+                    value=f"{em.rank(1)}just\n{em.rank(2)}make\n{em.rank(3)}some\n{em.rank(4)}kind\n{em.rank(5)}of\n{em.rank(6)}serializable\n{em.rank(7)}json?\n",
                     inline=True)
     embed.add_field(name="Moves",
-                    value=f"{em.rankemoji(1)}for\n{em.rankemoji(2)}now\n{em.rankemoji(3)}this\n{em.rankemoji(4)}is\n{em.rankemoji(5)}just\n{em.rankemoji(6)}test\n{em.rankemoji(7)}data\n",
+                    value=f"{em.rank(1)}for\n{em.rank(2)}now\n{em.rank(3)}this\n{em.rank(4)}is\n{em.rank(5)}just\n{em.rank(6)}test\n{em.rank(7)}data\n",
                     inline=True)
 
     embed.set_footer(
