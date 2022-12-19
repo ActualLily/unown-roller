@@ -41,3 +41,16 @@ def type(type: str):
         return TYPES[type]
     else:
         return "[?]"
+
+
+def move(category: str):
+    MOVES = {
+       "physical": "<:movephys:1054377117778989067> ",
+       "special": "<:movespec:1054377119184076800> ",
+       "support": "<:movesupp:1054377120698204181> "
+    }
+
+    if str in MOVES.keys():
+        return MOVES[type]
+    else:
+        return "[?]"
