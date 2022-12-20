@@ -165,7 +165,6 @@ def pkmndata(pokemon: Union[int, str]):
                           f"INS {getbubbles(data.ins, data.insmax)}```",
                     inline=True)
 
-    # I forgot to capizalize the primary / foreign types in the database, and now I suffer
     embed.add_field(name="Traits",
                     value=f"**Type**\n" +
                           f"{em.type(data.type1)}**{data.type1.title()}**" + f"\n**{em.type(data.type2) + data.type2.title() if data.type2 is not None else ''}**\n\n" +
