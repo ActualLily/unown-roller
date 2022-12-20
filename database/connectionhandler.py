@@ -159,9 +159,7 @@ def addpokemon(pokedex: int, page: int, rank: int, basehp: int, strength: str, d
         "ins": insight.split(" ")[0],
         "insmax": insight.split(" ")[1],
         "evostage": f"'{evolutionstage}'",
-        "evospeed": f"'{evolutionspeed}'",
-        "weight": f"'{pokemondata.weight} kg'",
-        "height": f"'{float(pokemondata.height) / 10} kg'",
+        "evospeed": f"'{evolutionspeed}'"
     }
 
     cur.execute(converttoinsert(dbstructure, "pokemon"))

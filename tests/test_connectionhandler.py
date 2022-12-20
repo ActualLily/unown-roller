@@ -11,10 +11,10 @@ class Test(TestCase):
 
     def test_fetchhorizontal_group(self):
         data = database.connectionhandler.fetchhorizontal("pokemon", filter="name = 'bulbasaur'")
-        expected = {'pokedex': 1, 'name': 'bulbasaur', 'form': '', 'page': '90', 'rank': 1, 'type1': 'grass', 'type2': 'poison',
+        expected = {'pokedex': 1, 'name': 'bulbasaur', 'form': '', 'page': '90', 'rank': 2, 'type1': 'grass', 'type2': 'poison',
          'ability1': 'overgrow', 'ability2': None, 'moves': None, 'descriptor': 'Seed Pokémon', 'hp': 3, 'str': 2,
          'strmax': 4, 'dex': 2, 'dexmax': 4, 'vit': 2, 'vitmax': 4, 'spe': 2, 'spemax': 4, 'ins': 2, 'insmax': 4,
-         'evostage': 'First', 'evospeed': 'Medium', 'weight': '7 kg', 'height': '0.7m'}
+         'evostage': 'First', 'evospeed': 'Medium'}
 
         self.assertEqual(data, expected)
 
