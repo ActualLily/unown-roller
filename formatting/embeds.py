@@ -142,6 +142,7 @@ def movedata(move: str):
 
     return embed
 
+
 def pkmndata(pokemon: Union[int, str]):
     if isinstance(pokemon, str):
         filter = f"{'pokedex' if pokemon.isnumeric() else 'name'} = {int(pokemon) if pokemon.isnumeric() else pokemon}"
@@ -167,26 +168,26 @@ def pkmndata(pokemon: Union[int, str]):
 
     embed.add_field(name="Traits",
                     value=f"**Type**\n" +
-                          f"{em.type(data.type1)}**{data.type1.title()}**" + f"\n**{em.type(data.type2) + data.type2.title() if data.type2 is not None else ''}**\n\n" +
+                          f"{em.type(data.type1)}**{data.type1.title()}**\n" +
+                          (f"{'' + em.type(data.type2) + '**' + data.type2.title() + '**'}\n\n" if data.type2 is not None else '\n') +
                           f"**Abilities**\n" +
-                          f"{data.ability1.title()}" + f"\n{data.ability2.title() if data.ability2 is not None else ''}",
+                          f"{data.ability1.title()}" + f"\n{data.ability2.title() if data.ability2 is not None else ''}ㅤ",
                     inline=True)
 
-    embed.add_field(name="Data",
-                    value=f"**Corebook Page {data.page}**\n\n" +
-                          f"**Weight:** {data.weight}\n" +
-                          f"**Height:** {data.height}\n\n" +
+    embed.add_field(name=f"Data",
+                    value=f"**{em.rank(data.rank)}{em.rank(data.rank).split(':')[1].title()} Rank**\n\n" +
+                          f"**Corebook:** Page {data.page}\n\n" +
                           f"**Stage:** {data.evostage}\n" +
-                          f"**Evolution:** {data.evospeed}\n",
+                          f"**Evolution:** {data.evospeed}\nㅤ",
                     inline=True)
 
-    embed.add_field(name="Moves",
+    embed.add_field(name="Movesㅤㅤㅤㅤㅤㅤㅤㅤ",
                     value=f"{em.rank(1)}this\n{em.rank(2)}one\n{em.rank(3)}is\n{em.rank(4)}gonna\n{em.rank(5)}be\n{em.rank(6)}really\n{em.rank(7)}tough",
                     inline=True)
-    embed.add_field(name="Moves",
+    embed.add_field(name="Movesㅤㅤㅤㅤㅤㅤㅤㅤ",
                     value=f"{em.rank(1)}just\n{em.rank(2)}make\n{em.rank(3)}some\n{em.rank(4)}kind\n{em.rank(5)}of\n{em.rank(6)}serializable\n{em.rank(7)}json?",
                     inline=True)
-    embed.add_field(name="Moves",
+    embed.add_field(name=f"Movesㅤㅤㅤㅤㅤㅤㅤ",
                     value=f"{em.rank(1)}for\n{em.rank(2)}now\n{em.rank(3)}this\n{em.rank(4)}is\n{em.rank(5)}just\n{em.rank(6)}test\n{em.rank(7)}data",
                     inline=True)
 

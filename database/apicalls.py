@@ -28,6 +28,8 @@ def getpokemon(pokemon: str):
     try:
         request = requests.get(f"https://pokeapi.co/api/v2/pokemon/{pokemon}")
         pokemondata = json.loads(request.text, object_hook=lambda d: SimpleNamespace(**d))
+        for pkmnability in pokemondata.abilities:
+            pkmnability.ability.name = pkmnability.ability.name.replace('-', ' ')
     except:
         logging.warning(f"{pokemon} not found!")
 
