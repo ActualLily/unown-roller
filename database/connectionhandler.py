@@ -1,7 +1,7 @@
 import json
 import os
 import sqlite3
-from typing import Tuple
+from typing import Tuple, Union
 
 from dotwiz import DotWiz
 
@@ -42,6 +42,27 @@ def fetchhorizontal(table: str, column: str = "*", filter: str = None):
     conn.close()
 
     return response
+
+
+def modifyvalue(table: str, column: str, filter: str, entry: Union[str, int] = None):
+    conn, cur = connect()
+
+    entry = str(entry)
+
+    if not str(entry).isnumeric():
+        entry = f"'{entry}'"
+
+    if filter is not None:
+        statement = f"UPDATE {table} SET {column} = {entry} WHERE {filter}"
+    else:
+        raise PermissionError("Not allowed to modify the entire table at once. Define a filter.")
+
+    cur.execute(statement)
+
+    conn.commit()
+    conn.close()
+
+    return cur.rowcount
 
 
 def fetchvertical(table: str, column: str = "*", filter: str = None):
@@ -106,6 +127,10 @@ def addpokemon(pokedex: int, page: int, rank: int, basehp: int, strength: str, d
         addability(pokemondata.abilities[0].ability.name.lower())
         return f"ability:{pokemondata.abilities[0].ability.name.lower()}"
 
+    if len(pokemondata.abilities) == 2 and pokemondata.abilities[1].is_hidden is False:
+        addability(pokemondata.abilities[1].ability.name.lower())
+        return f"ability:{pokemondata.abilities[1].ability.name.lower()}"
+
     englishgenus = ""
     for genus in speciesdata.genera:
         if genus.language.name == "en":
@@ -123,16 +148,16 @@ def addpokemon(pokedex: int, page: int, rank: int, basehp: int, strength: str, d
         "ability2": f"'{pokemondata.abilities[1].ability.name.lower()}'" if len(pokemondata.abilities) == 2 and pokemondata.abilities[1].is_hidden is False else "null",
         "descriptor": f"'{englishgenus.genus}'",
         "hp": basehp,
-        "str": strength.split(",")[0],
-        "strmax": strength.split(",")[1],
-        "dex": dexterity.split(",")[0],
-        "dexmax": dexterity.split(",")[1],
-        "vit": vitality.split(",")[0],
-        "vitmax": vitality.split(",")[1],
-        "spe": special.split(",")[0],
-        "spemax": special.split(",")[1],
-        "ins": insight.split(",")[0],
-        "insmax": insight.split(",")[1],
+        "str": strength.split(" ")[0],
+        "strmax": strength.split(" ")[1],
+        "dex": dexterity.split(" ")[0],
+        "dexmax": dexterity.split(" ")[1],
+        "vit": vitality.split(" ")[0],
+        "vitmax": vitality.split(" ")[1],
+        "spe": special.split(" ")[0],
+        "spemax": special.split(" ")[1],
+        "ins": insight.split(" ")[0],
+        "insmax": insight.split(" ")[1],
         "evostage": f"'{evolutionstage}'",
         "evospeed": f"'{evolutionspeed}'",
         "weight": f"'{pokemondata.weight} kg'",

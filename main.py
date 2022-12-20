@@ -175,32 +175,67 @@ async def _pokemon(interaction, move: str, public: bool = False):
 
 
 # DATABASE MODIFICATION #
-@commands.is_owner()
-@tree.command(name="datamod-pokemon-add", description="Add data to list of Pokémon",
+
+@tree.command(name="data-pokemon-add", description="Add data to list of Pokémon",
               guild=discord.Object(id=GUILD_TEST))
-async def _datamod_pokemon_add(interaction, pokedex: int, page: int, rank: int, basehp: int, strength: str,
+@commands.is_owner()
+async def _data_pokemon_add(interaction, pokedex: int, page: int, rank: int, basehp: int, strength: str,
                                dexterity: str, vitality: str, special: str, insight: str, evolutionstage: str,
                                evolutionspeed: str, form: str = None):
-    addresult = db.addpokemon(pokedex, page, rank, basehp, strength, dexterity, vitality, special, insight,
-                              evolutionstage, evolutionspeed, form)
+    if db.hasperms(interaction.user.id) is True:
+        addresult = db.addpokemon(pokedex, page, rank, basehp, strength, dexterity, vitality, special, insight,
+                                  evolutionstage, evolutionspeed, form)
+        if addresult == "success":
+            await interaction.response.send_message(
+                embed=msgs.pkmndata(pokedex),
+                ephemeral=True)
 
-    if addresult == "success":
-        await interaction.response.send_message(
-            embed=msgs.pkmndata(pokedex),
-            ephemeral=True)
+        elif addresult.startswith("ability:"):
+            await interaction.response.send_message(
+                embed=msgs.error(f"Empty database entry created for {addresult.split(':')[1].title()}.\n"
+                                 f"Please re-use the last command to attempt adding the pokemon again.",
+                                 "Adding an ability"),
+                ephemeral=True,
+            )
 
-    elif addresult.startswith("ability:"):
+    else:
+        logging.warning(f"{interaction.user} tried to modify pokemove data!")
         await interaction.response.send_message(
-            embed=msgs.error(f"Empty database entry created for {addresult.split(':')[1].title()}.",
-                             "Adding an ability"),
+            embed=msgs.error("You do not have permission to change the database.", interaction.user.name),
             ephemeral=True
         )
 
-
-@commands.is_owner()
-@tree.command(name="datamod-pokemove", description="Modify and add data to list of Pokémon",
+@tree.command(name="data-mod", description="Add data to list of Pokémon",
               guild=discord.Object(id=GUILD_TEST))
-async def _datamod_pokemove(interaction, movename: str, rank: int):
+@commands.is_owner()
+async def _data_mod(interaction, table: str, name: str, field: str, value: str):
+    if db.hasperms(interaction.user.id) is True:
+        # TODO Check if the modification actually was successful.
+        # Only I can use this command for now, so it's whatever.
+        modifyvalue = db.modifyvalue(table, field, f"name = '{name}'", value)
+        if modifyvalue > 0:
+            await interaction.response.send_message(
+                embed=msgs.botmsg(f"Modified {table}!", f"{field} of {name} = {value}"),
+                ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                embed=msgs.error("Change failed.", interaction.user.name),
+                ephemeral=True
+            )
+
+
+    else:
+        logging.warning(f"{interaction.user} tried to modify pokemove data!")
+        await interaction.response.send_message(
+            embed=msgs.error("You do not have permission to change the database.", interaction.user.name),
+            ephemeral=True
+        )
+
+@tree.command(name="data-pokemove", description="Modify and add data to list of Pokémon",
+              guild=discord.Object(id=GUILD_TEST))
+@commands.is_owner()
+async def _data_pokemove(interaction, movename: str, rank: int):
     if db.hasperms(interaction.user.id) is True:
         pass
     else:
@@ -211,10 +246,10 @@ async def _datamod_pokemove(interaction, movename: str, rank: int):
         )
 
 
-@commands.is_owner()
-@tree.command(name="datamod-ability", description="Modify and add data to list of Pokémon",
+@tree.command(name="data-ability", description="Modify and add data to list of Pokémon",
               guild=discord.Object(id=GUILD_TEST))
-async def _datamod_ability(interaction, name: str, desc: str, effect: str):
+@commands.is_owner()
+async def _data_ability(interaction, name: str, desc: str, effect: str):
     if db.hasperms(interaction.user.id) is True:
         pass
     else:
