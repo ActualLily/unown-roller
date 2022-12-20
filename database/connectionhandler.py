@@ -104,7 +104,7 @@ def addpokemon(pokedex: int, page: int, rank: int, basehp: int, strength: str, d
 
     if fetchhorizontal("abilities", "name", f"name = '{pokemondata.abilities[0].ability.name.lower()}'") is None:
         addability(pokemondata.abilities[0].ability.name.lower())
-        return f"ability:{pokemondata.abilities[0].ability.namelower()}"
+        return f"ability:{pokemondata.abilities[0].ability.name.lower()}"
 
     englishgenus = ""
     for genus in speciesdata.genera:

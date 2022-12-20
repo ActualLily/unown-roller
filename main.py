@@ -81,68 +81,6 @@ async def _help(interaction, entry: availablecommands_help = None, public: bool 
         ephemeral=not public)
 
 
-availablecommands_datamod = Literal["add", "mod", "rem"]
-
-
-@commands.is_owner()
-@tree.command(name="datamod-pokemon", description="Modify and add data to list of Pokémon",
-              guild=discord.Object(id=GUILD_TEST))
-async def _datamod_pokemon(interaction, action: availablecommands_datamod, pokedex: int, page: int, rank: int, basehp: int, strength: str, dexterity: str, vitality: str, special: str, insight: str, evolutionstage: str, evolutionspeed: str, form: str = None):
-
-    match action:
-        case "add":
-            addresult = db.addpokemon(pokedex, page, rank, basehp, strength, dexterity, vitality, special, insight, evolutionstage, evolutionspeed, form)
-            if addresult == "success":
-                # TODO Output pokemon after adding
-                await interaction.response.send_message(
-                    embed=msgs.botmsg("Pokemon addition successful!", f"Added number `#{pokedex}' to the database."),
-                    ephemeral=True
-                )
-                await interaction.response.send_message(
-                    embed=msgs.pkmndata(pokedex),
-                    ephemeral=True
-                )
-
-            elif addresult.startswith("ability:"):
-                # TODO Output ability after adding
-                await interaction.response.send_message(
-                    embed=msgs.error(f"Empty database entry created for {addresult.split(':')[1].title()}.", "Adding an ability"),
-                    ephemeral=True
-                )
-                await interaction.response.send_message(
-                    embed=msgs.abilitydata(addresult.split(':')[1].title()),
-                    ephemeral=True
-                )
-
-
-
-@commands.is_owner()
-@tree.command(name="datamod-pokemove", description="Modify and add data to list of Pokémon",
-              guild=discord.Object(id=GUILD_TEST))
-async def _datamod_pokemove(interaction, action: availablecommands_datamod, movename: str, rank: int):
-    if db.hasperms(interaction.user.id) is True:
-        pass
-    else:
-        logging.warning(f"{interaction.user} tried to modify pokemove data!")
-        await interaction.response.send_message(
-            embed=msgs.error("You do not have permission to change the database.", interaction.user.name),
-            ephemeral=True
-        )
-
-@commands.is_owner()
-@tree.command(name="datamod-ability", description="Modify and add data to list of Pokémon",
-              guild=discord.Object(id=GUILD_TEST))
-async def _datamod_ability(interaction, action: availablecommands_datamod, movename: str, rank: int):
-    if db.hasperms(interaction.user.id) is True:
-        pass
-    else:
-        logging.warning(f"{interaction.user} tried to modify pokemove data!")
-        await interaction.response.send_message(
-            embed=msgs.error("You do not have permission to change the database.", interaction.user.name),
-            ephemeral=True
-        )
-
-
 # Simple package call + return
 @tree.command(name="roll", description="Roll dice with CritDice syntax", guild=discord.Object(id=GUILD_TEST))
 async def _roll(interaction, dice: str, public: bool = True):
@@ -169,33 +107,6 @@ async def _core(interaction, page: str, public: bool = False):
             embed=msgs.error(f"`{page}` is not a valid page number!", interaction.user.name),
             ephemeral=True
         )
-
-
-@tree.command(name="pokemon", description="Grab information about a Pokémon from UnownRoller's database",
-              guild=discord.Object(id=GUILD_TEST))
-async def _pokemon(interaction, id_name: str, public: bool = False):
-    await interaction.response.send_message(
-        embed=msgs.pkmndata(id_name),
-        ephemeral=not public
-    )
-
-
-@tree.command(name="ability", description="Grab information about an ability from UnownRoller's database",
-              guild=discord.Object(id=GUILD_TEST))
-async def _pokemon(interaction, ability: str, public: bool = False):
-    await interaction.response.send_message(
-        embed=msgs.abilitydata(ability),
-        ephemeral=not public
-    )
-
-
-@tree.command(name="move", description="Grab information about an ability from UnownRoller's database",
-              guild=discord.Object(id=GUILD_TEST))
-async def _pokemon(interaction, move: str, public: bool = False):
-    await interaction.response.send_message(
-        embed=msgs.movedata(move),
-        ephemeral=not public
-    )
 
 
 @tree.command(name="pokeroll",
@@ -232,6 +143,85 @@ async def _pokeroll(interaction, dice: str, chancedice: bool = False, public: bo
             embed=msgs.rolls(dice.replace("D", "d") + (" chance dice" if chancedice else ""), result,
                              explanation, interaction.user),
             ephemeral=not public
+        )
+
+
+# DATABASE LOOKUPS #
+@tree.command(name="pokemon", description="Grab information about a Pokémon from UnownRoller's database",
+              guild=discord.Object(id=GUILD_TEST))
+async def _pokemon(interaction, id_name: str, public: bool = False):
+    await interaction.response.send_message(
+        embed=msgs.pkmndata(id_name),
+        ephemeral=not public
+    )
+
+
+@tree.command(name="ability", description="Grab information about an ability from UnownRoller's database",
+              guild=discord.Object(id=GUILD_TEST))
+async def _pokemon(interaction, ability: str, public: bool = False):
+    await interaction.response.send_message(
+        embed=msgs.abilitydata(ability),
+        ephemeral=not public
+    )
+
+
+@tree.command(name="move", description="Grab information about an ability from UnownRoller's database",
+              guild=discord.Object(id=GUILD_TEST))
+async def _pokemon(interaction, move: str, public: bool = False):
+    await interaction.response.send_message(
+        embed=msgs.movedata(move),
+        ephemeral=not public
+    )
+
+
+# DATABASE MODIFICATION #
+@commands.is_owner()
+@tree.command(name="datamod-pokemon-add", description="Add data to list of Pokémon",
+              guild=discord.Object(id=GUILD_TEST))
+async def _datamod_pokemon_add(interaction, pokedex: int, page: int, rank: int, basehp: int, strength: str,
+                               dexterity: str, vitality: str, special: str, insight: str, evolutionstage: str,
+                               evolutionspeed: str, form: str = None):
+    addresult = db.addpokemon(pokedex, page, rank, basehp, strength, dexterity, vitality, special, insight,
+                              evolutionstage, evolutionspeed, form)
+
+    if addresult == "success":
+        await interaction.response.send_message(
+            embed=msgs.pkmndata(pokedex),
+            ephemeral=True)
+
+    elif addresult.startswith("ability:"):
+        await interaction.response.send_message(
+            embed=msgs.error(f"Empty database entry created for {addresult.split(':')[1].title()}.",
+                             "Adding an ability"),
+            ephemeral=True
+        )
+
+
+@commands.is_owner()
+@tree.command(name="datamod-pokemove", description="Modify and add data to list of Pokémon",
+              guild=discord.Object(id=GUILD_TEST))
+async def _datamod_pokemove(interaction, movename: str, rank: int):
+    if db.hasperms(interaction.user.id) is True:
+        pass
+    else:
+        logging.warning(f"{interaction.user} tried to modify pokemove data!")
+        await interaction.response.send_message(
+            embed=msgs.error("You do not have permission to change the database.", interaction.user.name),
+            ephemeral=True
+        )
+
+
+@commands.is_owner()
+@tree.command(name="datamod-ability", description="Modify and add data to list of Pokémon",
+              guild=discord.Object(id=GUILD_TEST))
+async def _datamod_ability(interaction, name: str, desc: str, effect: str):
+    if db.hasperms(interaction.user.id) is True:
+        pass
+    else:
+        logging.warning(f"{interaction.user} tried to modify pokemove data!")
+        await interaction.response.send_message(
+            embed=msgs.error("You do not have permission to change the database.", interaction.user.name),
+            ephemeral=True
         )
 
 
