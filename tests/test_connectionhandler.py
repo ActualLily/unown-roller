@@ -1,13 +1,13 @@
 from unittest import TestCase
 
-import database.connectionhandler
+import database.dbhandler
 
 
 class Test(TestCase):
 
     def test_fetchhorizontal_blank(self):
         data = database.connectionhandler.fetchhorizontal("pokemon", filter="name = 'pikablu'")
-        self.assertIsNone(data)#
+        self.assertIsNone(data)
 
     def test_fetchhorizontal_group(self):
         data = database.connectionhandler.fetchhorizontal("pokemon", filter="name = 'bulbasaur'")

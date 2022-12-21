@@ -3,15 +3,8 @@ import os
 import sqlite3
 from typing import Tuple, Union
 
-from dotwiz import DotWiz
-
 import database.apicalls as api
-
-
-def getcolumns(cur, table_name):
-    sql = "select * from %s where 1=0;" % table_name
-    cur.execute(sql)
-    return [col[0] for col in cur.description]
+from formatting import emoji
 
 
 def connect() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
@@ -21,6 +14,12 @@ def connect() -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
     cur = conn.cursor()
 
     return conn, cur
+
+
+def getcolumns(cur, table_name):
+    sql = "select * from %s where 1=0;" % table_name
+    cur.execute(sql)
+    return [col[0] for col in cur.description]
 
 
 def fetchhorizontal(table: str, column: str = "*", filter: str = None):
@@ -42,6 +41,55 @@ def fetchhorizontal(table: str, column: str = "*", filter: str = None):
     conn.close()
 
     return response
+
+
+def setpokemove(pokemon: Union[str, int], moves: dict):
+    conn, cur = connect()
+
+    # Make sure empty arrays are assigned for Better JSON and preventing NPEs down the line
+    for rank in emoji.RANKS.keys():
+        if rank not in moves:
+            moves[rank] = []
+
+    filter = ""
+
+    if str(pokemon).isnumeric():
+        filter = f"WHERE pokedex = {pokemon}"
+    else:
+        pokemon = f"'{pokemon}'"
+        filter = f"WHERE name = {pokemon}"
+
+    serialized = json.dumps(moves)
+
+    cur.execute(f"UPDATE pokemon SET moves = '{serialized}' {filter} ")
+    conn.commit()
+
+    conn.close()
+
+    if cur.rowcount > 0:
+        return True
+
+    return False
+
+
+def getpokemove(pokemon: Union[str, int]):
+    filter = ""
+
+    if str(pokemon).isnumeric():
+        filter = f"pokedex = {pokemon}"
+    else:
+        pokemon = f"'{pokemon}'"
+        filter = f"name = {pokemon}"
+
+    data = fetchhorizontal("pokemon", "moves", filter)
+
+    if data is None:
+        empty = {}
+        for rank in emoji.RANKS.keys():
+            empty[rank] = []
+        data = json.dumps(empty)
+
+    return data
 
 
 def modifyvalue(table: str, column: str, filter: str, entry: Union[str, int] = None):
@@ -115,6 +163,10 @@ def addability(name: str, description: str = None, effect: str = None):
     conn.close()
 
 
+def addmove(name: str, description: str = None, effect: str = None):
+    conn, cur = connect()
+
+
 # :)
 def addpokemon(pokedex: int, page: int, rank: int, basehp: int, strength: str, dexterity: str, vitality: str,
                special: str, insight: str, evolutionstage: str, evolutionspeed: str, form: str = None):
@@ -135,6 +187,7 @@ def addpokemon(pokedex: int, page: int, rank: int, basehp: int, strength: str, d
     for genus in speciesdata.genera:
         if genus.language.name == "en":
             englishgenus = genus
+            break
 
     dbstructure = {
         "pokedex": pokedex,
@@ -145,7 +198,9 @@ def addpokemon(pokedex: int, page: int, rank: int, basehp: int, strength: str, d
         "type1": f"'{pokemondata.types[0].type.name}'",
         "type2": f"'{pokemondata.types[1].type.name}'" if len(pokemondata.types) == 2 else "null",
         "ability1": f"'{pokemondata.abilities[0].ability.name.lower()}'",
-        "ability2": f"'{pokemondata.abilities[1].ability.name.lower()}'" if len(pokemondata.abilities) == 2 and pokemondata.abilities[1].is_hidden is False else "null",
+        "ability2": f"'{pokemondata.abilities[1].ability.name.lower()}'" if len(pokemondata.abilities) == 2 and
+                                                                            pokemondata.abilities[
+                                                                                1].is_hidden is False else "null",
         "descriptor": f"'{englishgenus.genus}'",
         "hp": basehp,
         "str": strength.split(" ")[0],

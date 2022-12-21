@@ -7,7 +7,7 @@ import rolldice
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
-import database.connectionhandler as db
+import database.dbhandler as db
 
 import formatting.embeds as msgs
 
@@ -158,7 +158,7 @@ async def _pokemon(interaction, id_name: str, public: bool = False):
 
 @tree.command(name="ability", description="Grab information about an ability from UnownRoller's database",
               guild=discord.Object(id=GUILD_TEST))
-async def _pokemon(interaction, ability: str, public: bool = False):
+async def _ability(interaction, ability: str, public: bool = False):
     await interaction.response.send_message(
         embed=msgs.abilitydata(ability),
         ephemeral=not public
@@ -167,7 +167,7 @@ async def _pokemon(interaction, ability: str, public: bool = False):
 
 @tree.command(name="move", description="Grab information about an ability from UnownRoller's database",
               guild=discord.Object(id=GUILD_TEST))
-async def _pokemon(interaction, move: str, public: bool = False):
+async def _move(interaction, move: str, public: bool = False):
     await interaction.response.send_message(
         embed=msgs.movedata(move),
         ephemeral=not public
@@ -176,12 +176,12 @@ async def _pokemon(interaction, move: str, public: bool = False):
 
 # DATABASE MODIFICATION #
 
-@tree.command(name="data-pokemon-add", description="Add data to list of Pokémon",
+@tree.command(name="data-pokemon", description="Add data to list of Pokémon",
               guild=discord.Object(id=GUILD_TEST))
 @commands.is_owner()
-async def _data_pokemon_add(interaction, pokedex: int, page: int, rank: int, basehp: int, strength: str,
-                               dexterity: str, vitality: str, special: str, insight: str, evolutionstage: str,
-                               evolutionspeed: str, form: str = None):
+async def _data_pokemon(interaction, pokedex: int, page: int, rank: int, basehp: int, strength: str,
+                        dexterity: str, vitality: str, special: str, insight: str, evolutionstage: str,
+                        evolutionspeed: str, form: str = None):
     if db.hasperms(interaction.user.id) is True:
         addresult = db.addpokemon(pokedex, page, rank, basehp, strength, dexterity, vitality, special, insight,
                                   evolutionstage, evolutionspeed, form)
@@ -232,10 +232,14 @@ async def _data_mod(interaction, table: str, name: str, field: str, value: str):
             ephemeral=True
         )
 
+
+availablecommands_pokemove = Literal["add", "remove"]
+
+
 @tree.command(name="data-pokemove", description="Modify and add data to list of Pokémon",
               guild=discord.Object(id=GUILD_TEST))
 @commands.is_owner()
-async def _data_pokemove(interaction, movename: str, rank: int):
+async def _data_pokemove(interaction, action: availablecommands_pokemove, name: str, rank: int = 1):
     if db.hasperms(interaction.user.id) is True:
         pass
     else:

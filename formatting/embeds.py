@@ -7,7 +7,7 @@ import discord
 from dotwiz import DotWiz
 from numpy.core.defchararray import isnumeric
 
-import database.connectionhandler as db
+import database.dbhandler as db
 import database.apicalls as api
 
 from formatting import emoji as em
